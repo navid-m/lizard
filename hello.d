@@ -175,6 +175,31 @@ class ProcessMemory
         }
         return 0;
     }
+
+    void readChainMemory(T)(string exeName, ulong address, ulong[] offsets, ref T value)
+    {
+        foreach (offset; offsets)
+        {
+            ulong intermediate;
+            if (readMemory(resolveAddress(exeName, address), intermediate))
+            {
+                ulong finalAddress = intermediate + offset;
+                string val;
+                if (readCString(finalAddress, val))
+                {
+                    value = val;
+                }
+                else
+                {
+                    writeln("Failed to read memory at final address.");
+                }
+            }
+            else
+            {
+                writeln("Failed to read intermediate pointer.");
+            }
+        }
+    }
 }
 
 void main()
@@ -182,23 +207,8 @@ void main()
     auto pm = ProcessMemory.fromWindowTitle("Cube 2: Sauerbraten");
     if (pm !is null)
     {
-        ulong intermediate;
-        if (pm.readMemory(pm.resolveAddress("sauerbraten.exe", 0x2A5730), intermediate)) //automate this
-        {
-            ulong finalAddress = intermediate + 0x274;
-            string value;
-            if (pm.readCString(finalAddress, value))
-            {
-                writeln("Value at address: ", value);
-            }
-            else
-            {
-                writeln("Failed to read memory at final address.");
-            }
-        }
-        else
-        {
-            writeln("Failed to read intermediate pointer.");
-        }
+        string valuer;
+        pm.readChainMemory("sauerbraten.exe", 0x2A5730, [0x274], valuer);
+        writeln(valuer);
     }
 }
