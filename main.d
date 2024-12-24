@@ -132,7 +132,8 @@ class ProcessMemory
                 cast(LPCVOID) address,
                 buffer.ptr,
                 buffer.length,
-                &bytesRead))
+                &bytesRead
+            ))
         {
             return false;
         }
