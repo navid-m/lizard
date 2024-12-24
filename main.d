@@ -88,6 +88,7 @@ class ProcessMemory
             T.sizeof,
             &bytesWritten
         );
+
         return result != 0 && bytesWritten == T.sizeof;
     }
 
