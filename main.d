@@ -179,7 +179,6 @@ class ProcessMemory
                         return cast(ulong) mod + offset;
                     }
                 }
-
             }
         }
         return 0;
