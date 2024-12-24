@@ -122,22 +122,27 @@ class ProcessMemory
     bool readCString(ulong address, ref string result)
     {
         SIZE_T bytesRead;
-        wchar[2000] wideBuffer;
-        if (ReadProcessMemory(
+        char[256] buffer;
+
+        if (!ReadProcessMemory(
                 processHandle,
                 cast(LPCVOID) address,
-                wideBuffer.ptr,
-                wideBuffer.length * wchar.sizeof,
-                &bytesRead)
-            )
+                buffer.ptr,
+                buffer.length,
+                &bytesRead))
         {
-            auto end = wideBuffer[0 .. bytesRead / wchar.sizeof].countUntil(0);
-            if (end >= 0)
+            return false;
+        }
+
+        foreach (i; 0 .. bytesRead)
+        {
+            if (buffer[i] == 0)
             {
-                result = cast(string) wideBuffer[0 .. end].idup;
+                result = cast(string) buffer[0 .. i].dup;
                 return true;
             }
         }
+
         return false;
     }
 
@@ -184,14 +189,19 @@ class ProcessMemory
             if (readMemory(resolveAddress(exeName, address), intermediate))
             {
                 ulong finalAddress = intermediate + offset;
-                string val;
-                if (readCString(finalAddress, val))
+                static if (is(T == string))
                 {
-                    value = val;
+                    if (!readCString(finalAddress, value))
+                    {
+                        writeln("Failed to read string at final address.");
+                    }
                 }
                 else
                 {
-                    writeln("Failed to read memory at final address.");
+                    if (!readMemory(finalAddress, value))
+                    {
+                        writeln("Failed to read bytes at final address.");
+                    }
                 }
             }
             else
