@@ -1,1 +1,1 @@
-ldc2 main.d -Lpsapi.lib
+ldc2 main.d lizard/logger.d -Lpsapi.lib

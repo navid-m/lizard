@@ -9,6 +9,7 @@ import core.sys.windows.windows;
 import core.thread.osthread;
 import core.time;
 import std.algorithm.searching;
+import lizard.logger;
 
 /** 
  * Handles process memory operations.
@@ -16,6 +17,7 @@ import std.algorithm.searching;
 class ProcessMemory
 {
     HANDLE processHandle;
+
     DWORD processId;
 
     this(DWORD pid)
@@ -110,7 +112,7 @@ class ProcessMemory
 
         if (hwnd is null)
         {
-            writeln("Window not found: ", windowTitle);
+            Logger.error("Window not found: " ~ windowTitle);
             return null;
         }
 
@@ -118,7 +120,7 @@ class ProcessMemory
         GetWindowThreadProcessId(hwnd, &pid);
         if (pid == 0)
         {
-            writeln("Failed to get process ID for window: ", windowTitle);
+            Logger.error("Failed to get process ID for window: " ~ windowTitle);
             return null;
         }
 
@@ -199,20 +201,20 @@ class ProcessMemory
                 {
                     if (!readCString(finalAddress, value))
                     {
-                        writeln("Failed to read string at final address.");
+                        Logger.warnRead("string at final address");
                     }
                 }
                 else
                 {
                     if (!readMemory(finalAddress, value))
                     {
-                        writeln("Failed to read bytes at final address.");
+                        Logger.warnRead("bytes at final address");
                     }
                 }
             }
             else
             {
-                writeln("Failed to read intermediate pointer.");
+                Logger.warnRead("intermediate pointer");
             }
         }
     }
