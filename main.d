@@ -222,6 +222,6 @@ void main()
     {
         string valuer;
         pm.readChainMemory("sauerbraten.exe", 0x2A5730, [0x274], valuer);
-        writeln(valuer);
+        writeln("Current player: ", valuer);
     }
 }
