@@ -1,5 +1,3 @@
-module main;
-
 import core.sys.windows.windows;
 import core.sys.windows.psapi;
 import std.datetime;
@@ -9,7 +7,7 @@ import core.sys.windows.windows;
 import core.thread.osthread;
 import core.time;
 import std.algorithm.searching;
-import lizard.logger;
+import lizard.logging;
 
 /** 
  * Handles process memory operations.

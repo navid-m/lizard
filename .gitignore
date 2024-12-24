@@ -1,4 +1,6 @@
 *.exe
+*.pdb
 .vscode
 *.obj
 nimclipboard
+dub.selections.json

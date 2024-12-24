@@ -1,0 +1,9 @@
+{
+   "authors": ["nm"],
+   "copyright": "Copyright © 2024, NM",
+   "description": "Sauerbraten hack",
+   "license": "proprietary",
+   "name": "lizard",
+   "targetType": "executable",
+   "dflags": ["-main", "-Lpsapi.lib"]
+}
