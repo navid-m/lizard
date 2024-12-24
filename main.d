@@ -1,3 +1,5 @@
+module main;
+
 import core.sys.windows.windows;
 import core.sys.windows.psapi;
 import std.stdio;
