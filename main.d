@@ -219,7 +219,7 @@ class ProcessMemory
 void main()
 {
     auto pm = ProcessMemory.fromWindowTitle("Cube 2: Sauerbraten");
-    if (pm !is null)
+    if (pm != null)
     {
         string valuer;
         pm.readChainMemory("sauerbraten.exe", 0x2A5730, [0x274], valuer);
