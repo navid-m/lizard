@@ -24,7 +24,6 @@ void main()
 
         while (true)
         {
-
             byte[10] isAimingAtEnemy;
             pm.readChainMemory("sauerbraten.exe", 0x26DD08, [0x83C], isAimingAtEnemy);
             if (isAimingAtEnemy[0] != -54)
