@@ -98,6 +98,26 @@ class ProcessMemory
         return result != 0 && bytesWritten == T.sizeof;
     }
 
+    void writeChainMemory(T)(string exeName, ulong address, ulong[] offsets, T value)
+    {
+        foreach (offset; offsets)
+        {
+            ulong intermediate;
+            if (readMemory(resolveAddress(exeName, address), intermediate))
+            {
+                ulong finalAddress = intermediate + offset;
+                if (!writeMemory(finalAddress, value))
+                {
+                    Logger.error("Failed to write value at final address");
+                }
+            }
+            else
+            {
+                Logger.error("Failed to read intermediate pointer");
+            }
+        }
+    }
+
     /**
      * Gets the process ID and handle by window title.
      *
