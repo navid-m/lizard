@@ -16,6 +16,9 @@ package class Logger
             writefln("Read error: %s %s", acerrMsg, message);
         }
 
+        /** 
+         * General error warning
+         */
         void error(string message)
         {
             writefln("Error: %s", message);

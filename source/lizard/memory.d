@@ -148,6 +148,13 @@ class ProcessMemory
         return new ProcessMemory(pid);
     }
 
+    /** 
+     * Read string in C format.
+     * Params:
+     *   address = Memory address
+     *   result = Result will be written to here
+     * Returns: Whether the read was successful or not.
+     */
     bool readCString(ulong address, ref string result)
     {
         SIZE_T bytesRead;
