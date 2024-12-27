@@ -1,7 +1,7 @@
 {
    "authors": ["nm"],
    "copyright": "Copyright © 2024, NM",
-   "description": "Memory editing library for manipulating Windows processes",
+   "description": "Memory editing library for manipulating Windows processes, good for gamehacks",
    "license": "GPLv3",
    "name": "lizard",
    "targetType": "library",

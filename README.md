@@ -1,6 +1,6 @@
 ### Lizard: Memory editing library
 
-Much suited to gamehacking, though can be used for other things.
+Much suited to gamehacking.
 
 #### Example usage
 
