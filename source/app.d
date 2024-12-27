@@ -9,12 +9,11 @@ void main()
     auto pm = ProcessMemory.fromWindowTitle("Cube 2: Sauerbraten");
     if (pm !is null)
     {
-        string valuer;
-        pm.readChainMemory("sauerbraten.exe", 0x2A5730, [0x274], valuer);
-        writeln("Current player: ", valuer);
+        string playerName;
+        pm.readChainMemory("sauerbraten.exe", 0x2A5730, [0x274], playerName);
+        writeln("Current player: ", playerName);
 
-        ulong[4] towrite = [1, 101, 110, 100];
-        ulong[4] tostop = [0, 101, 110, 100];
+        ulong[4] towrite = [1, 101, 110, 100], tostop = [0, 101, 110, 100];
 
         while (true)
         {
