@@ -54,7 +54,7 @@ public class ProcessMemory
      * Returns:
      *   True if the read was successful, false otherwise.
      */
-    bool readMemory(T)(ulong address, ref T value)
+    public bool readMemory(T)(ulong address, ref T value)
     {
         if (processHandle is null)
             return false;
@@ -81,7 +81,7 @@ public class ProcessMemory
      * Returns:
      *   True if the write was successful, false otherwise.
      */
-    bool writeMemory(T)(ulong address, T value)
+    public bool writeMemory(T)(ulong address, T value)
     {
         if (processHandle is null)
             return false;
@@ -98,7 +98,7 @@ public class ProcessMemory
         return result != 0 && bytesWritten == T.sizeof;
     }
 
-    void writeChainMemory(T)(string exeName, ulong address, ulong[] offsets, T value)
+    public void writeChainMemory(T)(string exeName, ulong address, ulong[] offsets, T value)
     {
         foreach (offset; offsets)
         {
@@ -127,7 +127,7 @@ public class ProcessMemory
      * Returns:
      *   A ProcessMemory instance if the process is found, null otherwise.
      */
-    static ProcessMemory fromWindowTitle(string windowTitle)
+    public static ProcessMemory fromWindowTitle(string windowTitle)
     {
         HWND hwnd = FindWindowA(null, toStringz(windowTitle));
 
@@ -155,7 +155,7 @@ public class ProcessMemory
      *   result = Result will be written to here
      * Returns: Whether the read was successful or not.
      */
-    bool readCString(ulong address, ref string result)
+    public bool readCString(ulong address, ref string result)
     {
         SIZE_T bytesRead;
         char[256] buffer;
@@ -183,7 +183,7 @@ public class ProcessMemory
         return false;
     }
 
-    ulong resolveAddress(string moduleName, ulong offset)
+    private ulong resolveAddress(string moduleName, ulong offset)
     {
         DWORD needed;
         HMODULE[] modules = new HMODULE[1024];
@@ -217,7 +217,7 @@ public class ProcessMemory
         return 0;
     }
 
-    void readChainMemory(T)(string exeName, ulong address, ulong[] offsets, ref T value)
+    public void readChainMemory(T)(string exeName, ulong address, ulong[] offsets, ref T value)
     {
         foreach (offset; offsets)
         {
