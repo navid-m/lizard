@@ -2,7 +2,7 @@ module lizard.logging;
 
 import std.stdio;
 
-class Logger
+package class Logger
 {
     static
     {

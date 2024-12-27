@@ -1,13 +1,7 @@
-import core.sys.windows.windows;
-import core.sys.windows.psapi;
-import core.sys.windows.windows;
 import core.thread.osthread;
 import core.time;
-import std.datetime;
 import std.stdio;
 import std.string;
-import std.algorithm.searching;
-import lizard.logging;
 import lizard.memory;
 
 void main()
