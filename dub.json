@@ -1,9 +1,9 @@
 {
    "authors": ["nm"],
    "copyright": "Copyright © 2024, NM",
-   "description": "Sauerbraten hack",
-   "license": "proprietary",
+   "description": "Memory editing library for manipulating Windows processes",
+   "license": "GPLv3",
    "name": "lizard",
-   "targetType": "executable",
+   "targetType": "library",
    "dflags": ["-main", "-Lpsapi.lib"]
 }

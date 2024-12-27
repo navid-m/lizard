@@ -5,3 +5,4 @@
 nimclipboard
 dub.selections.json
 .dub
+*.lib
