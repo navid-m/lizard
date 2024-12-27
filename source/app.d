@@ -1,7 +1,6 @@
 import core.thread.osthread;
 import core.time;
 import std.stdio;
-import std.string;
 import lizard.memory;
 
 void main()
