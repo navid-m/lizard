@@ -15,7 +15,7 @@ import lizard.logging;
 /** 
  * Handles process memory operations.
  */
-class ProcessMemory
+public class ProcessMemory
 {
     HANDLE processHandle;
 
