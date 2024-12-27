@@ -1,8 +1,8 @@
-module logger;
+module lizard.logger;
 
 import std.stdio;
 
-package class Logger
+package static class Logger
 {
     static
     {

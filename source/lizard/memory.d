@@ -1,4 +1,4 @@
-module memory;
+module lizard.memory;
 
 import core.sys.windows.windows;
 import core.sys.windows.psapi;
