@@ -1,4 +1,4 @@
-module lizard.memory;
+module memory;
 
 import core.sys.windows.windows;
 import core.sys.windows.psapi;
@@ -10,7 +10,7 @@ import std.stdio;
 import std.conv;
 import std.string;
 import std.algorithm.searching;
-import lizard.logging;
+import lizard.logger;
 
 /** 
  * Handles process memory operations.

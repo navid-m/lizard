@@ -3,7 +3,9 @@
    "copyright": "Copyright © 2024, NM",
    "description": "Memory editing library for manipulating Windows processes",
    "license": "GPLv3",
+   "sourcePaths": ["source"],
+   "importPaths": ["source"],
    "name": "lizard",
    "targetType": "library",
-   "dflags": ["-main", "-Lpsapi.lib"]
+   "dflags": ["-Lpsapi.lib"]
 }

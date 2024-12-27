@@ -1,4 +1,4 @@
-module lizard.logging;
+module logger;
 
 import std.stdio;
 
