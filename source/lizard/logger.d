@@ -6,14 +6,14 @@ package static class Logger
 {
     static
     {
-        private string acerrMsg = "failed to read";
+        package bool loudLogging = true;
 
         /** 
          * Warn about failed read
          */
         void warnRead(string message)
         {
-            writefln("Read error: %s %s", acerrMsg, message);
+            writefln("Read error: failed to read %s", message);
         }
 
         /** 
@@ -22,6 +22,17 @@ package static class Logger
         void error(string message)
         {
             writefln("Error: %s", message);
+        }
+
+        /** 
+        * Print some debug info
+        */
+        void info(string message)
+        {
+            if (loudLogging)
+            {
+                writefln("\x1B[90mInfo: %s\x1B[0m", message);
+            }
         }
     }
 }

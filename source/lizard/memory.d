@@ -18,11 +18,14 @@ import lizard.logger;
 public class ProcessMemory
 {
     HANDLE processHandle;
-
     DWORD processId;
+    BOOL isWow64;
+    BOOL isSelfWow64;
 
     this(DWORD pid)
     {
+        IsWow64Process(GetCurrentProcess(), &isSelfWow64);
+
         processId = pid;
         processHandle = OpenProcess(
             PROCESS_VM_READ | PROCESS_VM_WRITE | PROCESS_VM_OPERATION,
@@ -30,10 +33,23 @@ public class ProcessMemory
             processId
         );
 
-        if (processHandle is null)
+        if (processHandle !is null)
+        {
+            IsWow64Process(processHandle, &isWow64);
+            if (isWow64 != isSelfWow64)
+            {
+                Logger.error(
+                    "Architecture mismatch: The target process and current process must be same arch (x86 or x64)."
+                );
+                CloseHandle(processHandle);
+                processHandle = null;
+            }
+        }
+        else
         {
             Logger.error("Failed to open process with PID: " ~ to!string(pid));
         }
+
     }
 
     ~this()
@@ -157,8 +173,33 @@ public class ProcessMemory
      */
     public bool readCString(ulong address, ref string result)
     {
+
+        if (address == 0)
+        {
+            Logger.error("Attempted to read from null address");
+            return false;
+        }
+
         SIZE_T bytesRead;
         char[256] buffer;
+
+        MEMORY_BASIC_INFORMATION mbi;
+        if (VirtualQueryEx(
+                processHandle,
+                cast(LPCVOID) address,
+                &mbi,
+                MEMORY_BASIC_INFORMATION.sizeof
+            ) == 0)
+        {
+            Logger.error("VirtualQueryEx failed for address: " ~ to!string(address));
+            return false;
+        }
+
+        if (!(mbi.State & MEM_COMMIT))
+        {
+            Logger.error("Memory at address is not committed: " ~ to!string(address));
+            return false;
+        }
 
         if (!ReadProcessMemory(
                 processHandle,
@@ -168,6 +209,8 @@ public class ProcessMemory
                 &bytesRead
             ))
         {
+            DWORD error = GetLastError();
+            Logger.error("ReadProcessMemory call failed with error code: " ~ to!string(error));
             return false;
         }
 
@@ -187,14 +230,15 @@ public class ProcessMemory
     {
         DWORD needed;
         HMODULE[] modules = new HMODULE[1024];
-        if (
-            EnumProcessModules(
+
+        Logger.info("Trying to resolve " ~ moduleName ~ " with offset " ~ to!string(offset));
+
+        if (EnumProcessModules(
                 cast(HANDLE) processHandle,
                 cast(HMODULE*) modules.ptr,
                 cast(DWORD)(modules.length * HMODULE.sizeof),
                 cast(LPDWORD)&needed
-            )
-            )
+            ))
         {
             foreach (mod; modules[0 .. needed / HMODULE.sizeof])
             {
@@ -207,42 +251,76 @@ public class ProcessMemory
                     )
                 {
                     auto foundModuleName = moduleNameBuffer[0 .. moduleNameBuffer.indexOf(0)];
+                    Logger.info("Found module: " ~ to!string(foundModuleName));
                     if (foundModuleName == moduleName)
                     {
-                        return cast(ulong) mod + offset;
+                        auto finalAddress = cast(ulong) mod + offset;
+                        Logger.info("Found module, final address: " ~ to!string(finalAddress));
+                        return finalAddress;
                     }
                 }
             }
+        }
+        else
+        {
+            Logger.error("EnumProcessModules failed with error: " ~ to!string(GetLastError()));
         }
         return 0;
     }
 
     public void readChainMemory(T)(string exeName, ulong address, ulong[] offsets, ref T value)
     {
-        foreach (offset; offsets)
+        auto baseAddr = resolveAddress(exeName, address);
+        Logger.info("Base address resolved to: " ~ to!string(baseAddr));
+
+        if (baseAddr == 0)
+        {
+            Logger.error("Failed to resolve base address for " ~ exeName);
+            return;
+        }
+
+        ulong currentAddress = baseAddr;
+        foreach (i, offset; offsets)
         {
             ulong intermediate;
-            if (readMemory(resolveAddress(exeName, address), intermediate))
+            Logger.info("Reading address: " ~ to!string(currentAddress));
+
+            if (readMemory(currentAddress, intermediate))
             {
-                ulong finalAddress = intermediate + offset;
-                static if (is(T == string))
-                {
-                    if (!readCString(finalAddress, value))
-                    {
-                        Logger.warnRead("string at final address");
-                    }
-                }
-                else
-                {
-                    if (!readMemory(finalAddress, value))
-                    {
-                        Logger.warnRead("bytes at final address");
-                    }
-                }
+                currentAddress = intermediate + offset;
+                Logger.info(
+                    "New address after offset "
+                        ~ to!string(
+                            offset
+                        ) ~ ": " ~ to!string(
+                            currentAddress
+                        )
+                );
             }
             else
             {
-                Logger.warnRead("intermediate pointer");
+                Logger.error("Failed to read at address: " ~ to!string(currentAddress));
+                return;
+            }
+        }
+
+        static if (is(T == string))
+        {
+            if (!readCString(currentAddress, value))
+            {
+                Logger.error(
+                    "Failed to read string at final address: "
+                        ~ to!string(
+                            currentAddress
+                        )
+                );
+            }
+        }
+        else
+        {
+            if (!readMemory(currentAddress, value))
+            {
+                Logger.error("Failed to read value at final address: " ~ to!string(currentAddress));
             }
         }
     }
