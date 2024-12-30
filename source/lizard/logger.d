@@ -2,11 +2,19 @@ module lizard.logger;
 
 import std.stdio;
 
+/** 
+ * Toggle showing extended information in the console.
+ */
+public void setLoudLogging(bool loud)
+{
+    Logger.loudLogging = loud;
+}
+
 package static class Logger
 {
     static
     {
-        package bool loudLogging = true;
+        package bool loudLogging = false;
 
         /** 
          * Warn about failed read
