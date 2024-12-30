@@ -5,5 +5,15 @@
    "license": "GPLv3",
    "name": "lizard",
    "targetType": "library",
+   "configurations": [
+      {
+         "name": "x64",
+         "dflags": ["--march=x86-64"]
+      },
+      {
+         "name": "x86",
+         "dflags": ["--march=x86"]
+      }
+   ],
    "dflags": ["-Lpsapi.lib"]
 }
