@@ -88,6 +88,44 @@ public class ProcessMemory
     }
 
     /**
+     * Reads a C-style double from memory.
+     *
+     * Params:
+     *   address = The memory address to read from.
+     *   result = The variable to store the read value.
+     *
+     * Returns:
+     *   True if the read was successful, false otherwise.
+     */
+    public bool readCDouble(ulong address, ref double result)
+    {
+        if (processHandle is null || address == 0)
+        {
+            Logger.error("Invalid process handle or address.");
+            return false;
+        }
+
+        SIZE_T bytesRead;
+        double tempResult;
+
+        if (!ReadProcessMemory(
+                processHandle,
+                cast(LPCVOID) address,
+                &tempResult,
+                double.sizeof,
+                &bytesRead
+            ) || bytesRead != double.sizeof)
+        {
+            DWORD error = GetLastError();
+            Logger.error("ReadProcessMemory failed with error code: " ~ to!string(error));
+            return false;
+        }
+
+        result = tempResult;
+        return true;
+    }
+
+    /**
      * Writes memory to the specified address.
      *
      * Params:
