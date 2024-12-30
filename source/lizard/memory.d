@@ -39,8 +39,7 @@ public class ProcessMemory
             if (isWow64 != isSelfWow64)
             {
                 Logger.error(
-                    "Architecture mismatch: " ~
-                        "The target process and current process must be same architecture (x86 or x64)."
+                    "Architecture mismatch: The target and current process must be same architecture (x86 or x64)."
                 );
                 CloseHandle(processHandle);
                 processHandle = null;
