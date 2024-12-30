@@ -264,7 +264,7 @@ public class ProcessMemory
         return false;
     }
 
-    private ulong resolveAddress(string moduleName, ulong offset)
+    public ulong resolveAddress(string moduleName, ulong offset)
     {
         DWORD needed;
         HMODULE[] modules = new HMODULE[1024];
