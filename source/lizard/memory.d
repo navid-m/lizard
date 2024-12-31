@@ -167,7 +167,6 @@ public class ProcessMemory
         DWORD previousPermissions;
         SIZE_T bytesWritten;
 
-        // First, change page permissions to allow writing
         if (
             !VirtualProtectEx(
                 processHandle,
@@ -175,11 +174,15 @@ public class ProcessMemory
                 address,
                 T.sizeof,
                 PAGE_EXECUTE_READWRITE,
-                &oldProtect)
+                &oldProtect
             )
+            )
+        {
+            Logger.error("Failed to change page permissions to execute/read/write.");
             return false;
+        }
 
-        // Perform the write
+        // Perform write
         auto result = WriteProcessMemory(
             processHandle,
             cast(LPVOID) address,
