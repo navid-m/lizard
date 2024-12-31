@@ -151,6 +151,55 @@ public class ProcessMemory
         return result != 0 && bytesWritten == T.sizeof;
     }
 
+    /** 
+     * Write using VirtualProtectEx to temporarily modify page permissions.
+     * Params:
+     *   address = Memory address to write to.
+     *   value = The value to write.
+     * Returns: 
+     */
+    public bool writeMemoryProtected(T)(ulong address, T value)
+    {
+        if (processHandle is null)
+            return false;
+
+        DWORD oldProtect;
+        DWORD previousPermissions;
+        SIZE_T bytesWritten;
+
+        // First, change page permissions to allow writing
+        if (
+            !VirtualProtectEx(
+                processHandle,
+                cast(LPVOID)
+                address,
+                T.sizeof,
+                PAGE_EXECUTE_READWRITE,
+                &oldProtect)
+            )
+            return false;
+
+        // Perform the write
+        auto result = WriteProcessMemory(
+            processHandle,
+            cast(LPVOID) address,
+            &value,
+            T.sizeof,
+            &bytesWritten
+        );
+
+        // Restore original permissions
+        VirtualProtectEx(
+            processHandle,
+            cast(LPVOID) address,
+            T.sizeof,
+            oldProtect,
+            &previousPermissions
+        );
+
+        return result != 0 && bytesWritten == T.sizeof;
+    }
+
     public void writeChainMemory(T)(string exeName, ulong address, ulong[] offsets, T value)
     {
         foreach (offset; offsets)
