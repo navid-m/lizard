@@ -49,7 +49,6 @@ public class ProcessMemory
         {
             Logger.error("Failed to open process with PID: " ~ to!string(pid));
         }
-
     }
 
     ~this()
