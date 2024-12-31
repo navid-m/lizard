@@ -156,7 +156,7 @@ public class ProcessMemory
      * Params:
      *   address = Memory address to write to.
      *   value = The value to write.
-     * Returns: 
+     * Returns: Whether the permission change and write was successful.
      */
     public bool writeMemoryProtected(T)(ulong address, T value)
     {
