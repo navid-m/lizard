@@ -60,7 +60,7 @@ public class ProcessMemory
     }
 
     /**
-     * Reads memory from the specified address.
+     * Read memory from the specified address.
      *
      * Params:
      *   address = The memory address to read from.
@@ -87,7 +87,7 @@ public class ProcessMemory
     }
 
     /**
-     * Reads a C-style double from memory.
+     * Read a C-style double from memory.
      *
      * Params:
      *   address = The memory address to read from.
@@ -125,7 +125,7 @@ public class ProcessMemory
     }
 
     /**
-     * Writes memory to the specified address.
+     * Write memory to the specified address.
      *
      * Params:
      *   address = The memory address to write to.
@@ -172,7 +172,7 @@ public class ProcessMemory
     }
 
     /**
-     * Gets the process ID and handle by window title.
+     * Get the process ID and handle by window title.
      *
      * Params:
      *   windowTitle = The title of the window to find.
