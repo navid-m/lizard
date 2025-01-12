@@ -19,9 +19,13 @@ package static class Logger
         /** 
          * General error warning
          */
-        void error(string message)
+        void error(string message, bool throwIt = false)
         {
             writefln("Error: %s", message);
+            if (throwIt)
+            {
+                throw new Exception(message);
+            }
         }
 
         /** 

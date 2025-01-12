@@ -3,6 +3,7 @@ module lizard.memory;
 import core.sys.windows.windows;
 import core.sys.windows.psapi;
 import core.sys.windows.windows;
+import core.sys.windows.tlhelp32;
 import core.thread.osthread;
 import core.time;
 import std.datetime;
@@ -253,11 +254,61 @@ public class ProcessMemory
         return new ProcessMemory(pid);
     }
 
+    /**
+    * Get the process ID and handle by process name.
+    *
+    * Params:
+    *   processName = The name of the process to find.
+    *
+    * Returns:
+    *   A ProcessMemory instance if the process is found, null otherwise.
+    */
+    public static ProcessMemory fromProcessName(string processName)
+    {
+        HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+        if (snapshot == INVALID_HANDLE_VALUE)
+        {
+            Logger.error("Failed to create snapshot of processes", true);
+            return null;
+        }
+        try
+        {
+            PROCESSENTRY32 entry;
+            entry.dwSize = PROCESSENTRY32.sizeof;
+            if (Process32First(snapshot, &entry))
+            {
+                do
+                {
+                    string currentProcessName = to!string(
+                        entry.szExeFile[0 .. entry.szExeFile.indexOf('\0')]
+                    );
+                    if (strip(currentProcessName) == strip(processName))
+                    {
+                        return new ProcessMemory(entry.th32ProcessID);
+                    }
+                }
+                while (Process32Next(snapshot, &entry));
+            }
+            else
+            {
+                Logger.error("Failed to retrieve the first process in snapshot.");
+            }
+        }
+        finally
+        {
+            CloseHandle(snapshot);
+        }
+        Logger.error("Could not find process: " ~ processName, true);
+        return null;
+    }
+
     /** 
      * Read string in C format.
+     *
      * Params:
      *   address = Memory address
      *   result = Result will be written to here
+     *
      * Returns: Whether the read was successful or not.
      */
     public bool readCString(ulong address, ref string result)
