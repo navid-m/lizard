@@ -289,10 +289,6 @@ public class ProcessMemory
                 }
                 while (Process32Next(snapshot, &entry));
             }
-            else
-            {
-                Logger.error("Failed to retrieve the first process in snapshot.");
-            }
         }
         finally
         {
