@@ -107,7 +107,6 @@ public class ProcessMemory
 
         SIZE_T bytesRead;
         double tempResult;
-
         if (!ReadProcessMemory(
                 processHandle,
                 cast(LPCVOID) address,
@@ -115,6 +114,43 @@ public class ProcessMemory
                 double.sizeof,
                 &bytesRead
             ) || bytesRead != double.sizeof)
+        {
+            DWORD error = GetLastError();
+            Logger.error("ReadProcessMemory failed with error code: " ~ to!string(error));
+            return false;
+        }
+
+        result = tempResult;
+        return true;
+    }
+
+    /***
+    * Read a C-style float from memory.
+    *
+    * Params:
+    *   address = The memory address to read from.
+    *   result = The variable to store the read value.
+    *
+    * Returns:
+    *   True if the read was successful, false otherwise.
+    */
+    public bool readCFloat(ulong address, ref float result)
+    {
+        if (processHandle is null || address == 0)
+        {
+            Logger.error("Invalid process handle or address.");
+            return false;
+        }
+
+        SIZE_T bytesRead;
+        float tempResult;
+        if (!ReadProcessMemory(
+                processHandle,
+                cast(LPCVOID) address,
+                &tempResult,
+                float.sizeof,
+                &bytesRead
+            ) || bytesRead != float.sizeof)
         {
             DWORD error = GetLastError();
             Logger.error("ReadProcessMemory failed with error code: " ~ to!string(error));
@@ -452,6 +488,31 @@ public class ProcessMemory
                 );
             }
         }
+        else static if (is(T == float))
+        {
+            if (!readCFloat(currentAddress, value))
+            {
+                Logger.error(
+                    "Failed to read float at final address: "
+                        ~ to!string(
+                            currentAddress
+                        )
+                );
+            }
+        }
+        else static if (is(T == double))
+        {
+            if (!readCDouble(currentAddress, value))
+            {
+                Logger.error(
+                    "Failed to read double at final address: "
+                        ~ to!string(
+                            currentAddress
+                        )
+                );
+            }
+        }
+
         else
         {
             if (!readMemory(currentAddress, value))
