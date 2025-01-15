@@ -12,6 +12,7 @@ import std.conv;
 import std.string;
 import std.algorithm.searching;
 import lizard.logger;
+import std.digest;
 
 /** 
  * Handles process memory operations.
@@ -452,6 +453,8 @@ public class ProcessMemory
         }
 
         ulong currentAddress = baseAddr;
+        ulong lastOffset;
+
         foreach (i, offset; offsets)
         {
             ulong intermediate;
@@ -469,11 +472,13 @@ public class ProcessMemory
                         )
                 );
             }
+
             else
             {
                 Logger.error("Failed to read at address: " ~ to!string(currentAddress));
                 return;
             }
+            lastOffset = offset;
         }
 
         static if (is(T == string))
@@ -505,7 +510,13 @@ public class ProcessMemory
         {
             if (!readMemory(currentAddress, value))
             {
-                Logger.error("Failed to read value at final address: " ~ to!string(currentAddress));
+                Logger.error(
+                    "Failed to read value at final address: " ~
+                        to!string(
+                            currentAddress) ~ "(reached via final offset " ~
+                        to!string(
+                            lastOffset) ~ ")"
+                );
             }
         }
     }
