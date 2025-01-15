@@ -488,18 +488,6 @@ public class ProcessMemory
                 );
             }
         }
-        else static if (is(T == float))
-        {
-            if (!readCFloat(currentAddress, value))
-            {
-                Logger.error(
-                    "Failed to read float at final address: "
-                        ~ to!string(
-                            currentAddress
-                        )
-                );
-            }
-        }
         else static if (is(T == double))
         {
             if (!readCDouble(currentAddress, value))
