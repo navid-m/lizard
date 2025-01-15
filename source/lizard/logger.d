@@ -13,7 +13,7 @@ package static class Logger
          */
         void warnRead(string message)
         {
-            writefln("Read error: failed to read %s", message);
+            writefln("[Read Error] Failed to read %s", message);
         }
 
         /** 
@@ -21,7 +21,7 @@ package static class Logger
          */
         void error(string message, bool throwIt = false)
         {
-            writefln("Error: %s", message);
+            writefln("[Error] %s", message);
             if (throwIt)
             {
                 throw new Exception(message);
@@ -35,7 +35,7 @@ package static class Logger
         {
             if (loudLogging)
             {
-                writefln("\x1B[90mInfo: %s\x1B[0m", message);
+                writefln("\x1B[90m[Info]: %s\x1B[0m", message);
             }
         }
     }

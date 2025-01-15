@@ -472,7 +472,6 @@ public class ProcessMemory
                         )
                 );
             }
-
             else
             {
                 Logger.error("Failed to read at address: " ~ to!string(currentAddress));
@@ -512,9 +511,11 @@ public class ProcessMemory
                 Logger.error(
                     "Failed to read value at final address: " ~
                         to!string(
-                            currentAddress) ~ "(reached via final offset " ~
+                            currentAddress
+                        ) ~ " (reached via final offset " ~
                         to!string(
-                            lastOffset) ~ ")"
+                            lastOffset
+                        ) ~ ")"
                 );
             }
         }
