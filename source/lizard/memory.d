@@ -443,7 +443,8 @@ public class ProcessMemory
 
     /**  
     * Only for use with long pointers.
-    * Do not use this for simple offsets.
+    *
+    * Do not use for simple offsets.
     *
     * Params:
     *   exeName = Module name or process executable
