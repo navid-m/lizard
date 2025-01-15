@@ -435,7 +435,8 @@ public class ProcessMemory
         }
         else
         {
-            Logger.error("EnumProcessModules failed with error: " ~ to!string(GetLastError()));
+            Logger.error("EnumProcessModules failed with error: " ~ to!string(GetLastError()
+                    .GetErrorInfo()));
         }
         return 0;
     }
