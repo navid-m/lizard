@@ -441,6 +441,16 @@ public class ProcessMemory
         return 0;
     }
 
+    /**  
+    * Only for use with long pointers.
+    * Do not use this for simple offsets.
+    *
+    * Params:
+    *   exeName = Module name or process executable
+    *   address = Address offset for module name
+    *   offsets = List of offsets
+    *   value = Value to read into
+    */
     public void readChainMemory(T)(string exeName, ulong address, ulong[] offsets, ref T value)
     {
         auto baseAddr = resolveAddress(exeName, address);
