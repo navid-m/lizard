@@ -505,7 +505,6 @@ public class ProcessMemory
                 );
             }
         }
-
         else
         {
             if (!readMemory(currentAddress, value))
