@@ -5,6 +5,7 @@ import core.sys.windows.psapi;
 import core.sys.windows.windows;
 import core.sys.windows.tlhelp32;
 import core.sync.mutex;
+import core.stdc.string : memcpy;
 import core.stdc.stdlib;
 import core.thread.osthread;
 import core.time;
@@ -648,6 +649,16 @@ public class ProcessMemory
         }
     }
 
+    /** 
+    * Resolve address by pointer chain.
+    * 
+    * Params:
+    *   exeName = Module name
+    *   address = Base address
+    *   offsets = Pointer offsets
+    *
+    * Returns: The resolved address
+    */
     public ulong resolveChainAddress(string exeName, ulong address, ulong[] offsets)
     {
         auto baseAddr = resolveAddress(exeName, address);
@@ -677,7 +688,17 @@ public class ProcessMemory
                 );
             }
         }
-
         return currentAddress;
+    }
+
+    /** 
+    * Patch some memory.
+    */
+    public void patchMemory(ubyte* dst, ubyte* src, uint size)
+    {
+        DWORD oldProtect;
+        VirtualProtect(dst, size, PAGE_EXECUTE_READWRITE, &oldProtect);
+        memcpy(dst, src, size);
+        VirtualProtect(dst, size, oldProtect, &oldProtect);
     }
 }
