@@ -191,6 +191,7 @@ public class ProcessMemory
 
     /** 
      * Write using VirtualProtectEx to temporarily modify page permissions.
+     *
      * Params:
      *   address = Memory address to write to.
      *   value = The value to write.
