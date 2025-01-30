@@ -20,10 +20,10 @@ import lizard.logger;
 /** 
  * Single memory location bound to one fixed value.
  */
-package struct FrozenValue(T)
+package struct FrozenValue
 {
     ulong address;
-    T value;
+    Variant value;
     Thread thread;
     bool active;
 }
@@ -34,7 +34,7 @@ package struct FrozenValue(T)
 public class ProcessMemory
 {
     private Mutex freezeMutex;
-    private FrozenValue!(Variant)[string] frozenValues;
+    private FrozenValue[string] frozenValues;
 
     HANDLE processHandle;
     DWORD processId;
@@ -136,7 +136,7 @@ public class ProcessMemory
                 return false;
             }
 
-            auto frozenValue = FrozenValue!T(address, value, null, true);
+            auto frozenValue = FrozenValue(address, Variant(value), null, true);
             frozenValue.thread = new Thread({
                 while (frozenValue.active)
                 {
@@ -646,5 +646,38 @@ public class ProcessMemory
                 );
             }
         }
+    }
+
+    public ulong resolveChainAddress(string exeName, ulong address, ulong[] offsets)
+    {
+        auto baseAddr = resolveAddress(exeName, address);
+        Logger.info("Base address resolved to: " ~ to!string(baseAddr));
+
+        if (baseAddr == 0)
+        {
+            Logger.error("Failed to resolve base address for " ~ exeName);
+        }
+
+        ulong currentAddress = baseAddr;
+        foreach (i, offset; offsets)
+        {
+            ulong intermediate;
+            Logger.info("Reading address: " ~ to!string(currentAddress));
+
+            if (readMemory(currentAddress, intermediate))
+            {
+                currentAddress = intermediate + offset;
+                Logger.info(
+                    "New address after offset "
+                        ~ to!string(
+                            offset
+                        ) ~ ": " ~ to!string(
+                            currentAddress
+                        )
+                );
+            }
+        }
+
+        return currentAddress;
     }
 }
