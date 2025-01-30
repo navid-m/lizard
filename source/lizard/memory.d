@@ -142,8 +142,8 @@ public class ProcessMemory
                 {
                     if (!writeMemory(address, value))
                     {
-                        Logger.error(
-                            "Failed to maintain frozen value at address: " ~ to!string(address)
+                        Logger.info(
+                            "Could not maintain frozen value at address: " ~ to!string(address)
                         );
                     }
                     Thread.sleep(dur!"msecs"(20));
