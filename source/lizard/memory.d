@@ -4,6 +4,8 @@ import core.sys.windows.windows;
 import core.sys.windows.psapi;
 import core.sys.windows.windows;
 import core.sys.windows.tlhelp32;
+import core.sync.mutex;
+import core.stdc.stdlib;
 import core.thread.osthread;
 import core.time;
 import std.datetime;
@@ -11,14 +13,26 @@ import std.stdio;
 import std.conv;
 import std.string;
 import std.algorithm.searching;
-import lizard.logger;
 import std.digest;
+import std.variant;
+import lizard.logger;
+
+package struct FrozenValue(T)
+{
+    ulong address;
+    T value;
+    Thread thread;
+    bool active;
+}
 
 /** 
  * Handles process memory operations.
  */
 public class ProcessMemory
 {
+    private Mutex freezeMutex;
+    private FrozenValue!(Variant)[string] frozenValues;
+
     HANDLE processHandle;
     DWORD processId;
     BOOL isWow64;
@@ -45,7 +59,9 @@ public class ProcessMemory
                 );
                 CloseHandle(processHandle);
                 processHandle = null;
+                exit(1);
             }
+            freezeMutex = new Mutex();
         }
         else
         {
@@ -55,6 +71,14 @@ public class ProcessMemory
 
     ~this()
     {
+        synchronized (freezeMutex)
+        {
+            foreach (ref frozenValue; frozenValues)
+            {
+                frozenValue.active = false;
+                frozenValue.thread.join();
+            }
+        }
         if (processHandle !is null)
         {
             CloseHandle(processHandle);
@@ -62,15 +86,15 @@ public class ProcessMemory
     }
 
     /**
-     * Read memory from the specified address.
-     *
-     * Params:
-     *   address = The memory address to read from.
-     *   value = The variable to store the read value.
-     *
-     * Returns:
-     *   True if the read was successful, false otherwise.
-     */
+    * Read memory from the specified address.
+    *
+    * Params:
+    *   address = The memory address to read from.
+    *   value = The variable to store the read value.
+    *
+    * Returns:
+    *   True if the read was successful, false otherwise.
+    */
     public bool readMemory(T)(ulong address, ref T value)
     {
         if (processHandle is null)
@@ -86,6 +110,91 @@ public class ProcessMemory
         );
 
         return result != 0 && bytesRead == T.sizeof;
+    }
+
+    /**
+    * Freeze a memory value at a specific address.
+    *
+    * Params:
+    *   address = The memory address to freeze
+    *   value = The value to maintain at that address
+    *   identifier = Unique string to identify this frozen value
+    *
+    * Returns:
+    *   True if freezing was initiated successfully
+    */
+    public bool freezeValue(T)(ulong address, T value, string identifier)
+    {
+        synchronized (freezeMutex)
+        {
+            if (identifier in frozenValues)
+            {
+                Logger.error("Value with identifier '" ~ identifier ~ "' is already frozen");
+                return false;
+            }
+
+            auto frozenValue = FrozenValue!T(address, value, null, true);
+            frozenValue.thread = new Thread({
+                while (frozenValue.active)
+                {
+                    if (!writeMemory(address, value))
+                    {
+                        Logger.error(
+                            "Failed to maintain frozen value at address: " ~ to!string(address)
+                        );
+                    }
+                    Thread.sleep(dur!"msecs"(20));
+                }
+            });
+
+            frozenValues[identifier] = frozenValue;
+            frozenValue.thread.start();
+            Logger.info("Started freezing value at address " ~ to!string(address));
+            return true;
+        }
+    }
+
+    /**
+     * Unfreeze a previously frozen memory value.
+     *
+     * Params:
+     *   identifier = The identifier of the value to unfreeze
+     *
+     * Returns:
+     *   True if the value was successfully unfrozen
+     */
+    public bool unfreezeValue(T)(string identifier)
+    {
+        synchronized (freezeMutex)
+        {
+            if (identifier !in frozenValues)
+            {
+                Logger.error("No frozen value found with identifier: " ~ identifier);
+                return false;
+            }
+            frozenValues[identifier].active = false;
+            frozenValues[identifier].thread.join();
+            frozenValues.remove(identifier);
+            Logger.info("Stopped freezing value with identifier: " ~ identifier);
+            return true;
+        }
+    }
+
+    /**
+     * Check if a value is currently frozen.
+     *
+     * Params:
+     *   identifier = The identifier to check
+     *
+     * Returns:
+     *   True if the value is currently frozen
+     */
+    public bool isValueFrozen(string identifier)
+    {
+        synchronized (freezeMutex)
+        {
+            return (identifier in frozenValues) !is null;
+        }
     }
 
     /**
@@ -348,7 +457,6 @@ public class ProcessMemory
      */
     public bool readCString(ulong address, ref string result)
     {
-
         if (address == 0)
         {
             Logger.error("Attempted to read from null address");
