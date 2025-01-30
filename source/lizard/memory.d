@@ -17,6 +17,9 @@ import std.digest;
 import std.variant;
 import lizard.logger;
 
+/** 
+ * Single memory location bound to one fixed value.
+ */
 package struct FrozenValue(T)
 {
     ulong address;
@@ -414,11 +417,13 @@ public class ProcessMemory
     public static ProcessMemory fromProcessName(string processName)
     {
         HANDLE snapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+
         if (snapshot == INVALID_HANDLE_VALUE)
         {
             Logger.error("Failed to create snapshot of processes", true);
             return null;
         }
+
         try
         {
             PROCESSENTRY32 entry;
@@ -442,6 +447,7 @@ public class ProcessMemory
         {
             CloseHandle(snapshot);
         }
+
         Logger.error("Could not find process: " ~ processName, true);
         return null;
     }
