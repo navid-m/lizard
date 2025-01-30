@@ -5,7 +5,7 @@ import core.sys.windows.psapi;
 import core.sys.windows.windows;
 import core.sys.windows.tlhelp32;
 import core.sync.mutex;
-import core.stdc.string : memcpy;
+import core.stdc.string;
 import core.stdc.stdlib;
 import core.thread.osthread;
 import core.time;
