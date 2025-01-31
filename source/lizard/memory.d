@@ -450,7 +450,7 @@ public class ProcessMemory
     */
     public static ProcessMemory fromWindowTitle(string windowTitle)
     {
-        HWND hwnd = FindWindowA(null, toStringz(windowTitle));
+        auto hwnd = FindWindowA(null, toStringz(windowTitle));
 
         if (hwnd is null)
         {
