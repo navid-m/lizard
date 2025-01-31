@@ -159,14 +159,14 @@ public class ProcessMemory
     }
 
     /**
-     * Unfreeze a previously frozen memory value.
-     *
-     * Params:
-     *   identifier = The identifier of the value to unfreeze
-     *
-     * Returns:
-     *   True if the value was successfully unfrozen
-     */
+    * Unfreeze a previously frozen memory value.
+    *
+    * Params:
+    *   identifier = The identifier of the value to unfreeze
+    *
+    * Returns:
+    *   True if the value was successfully unfrozen
+    */
     public bool unfreezeValue(T)(string identifier)
     {
         synchronized (freezeMutex)
@@ -185,14 +185,14 @@ public class ProcessMemory
     }
 
     /**
-     * Check if a value is currently frozen.
-     *
-     * Params:
-     *   identifier = The identifier to check
-     *
-     * Returns:
-     *   True if the value is currently frozen
-     */
+    * Check if a value is currently frozen.
+    *
+    * Params:
+    *   identifier = The identifier to check
+    *
+    * Returns:
+    *   True if the value is currently frozen
+    */
     public bool isValueFrozen(string identifier)
     {
         synchronized (freezeMutex)
@@ -202,15 +202,15 @@ public class ProcessMemory
     }
 
     /**
-     * Read a C-style double from memory.
-     *
-     * Params:
-     *   address = The memory address to read from.
-     *   result = The variable to store the read value.
-     *
-     * Returns:
-     *   True if the read was successful, false otherwise.
-     */
+    * Read a C-style double from memory.
+    *
+    * Params:
+    *   address = The memory address to read from.
+    *   result = The variable to store the read value.
+    *
+    * Returns:
+    *   True if the read was successful, false otherwise.
+    */
     public bool readCDouble(ulong address, ref double result)
     {
         if (processHandle is null || address == 0)
@@ -238,7 +238,7 @@ public class ProcessMemory
         return true;
     }
 
-    /***
+    /**
     * Read a C-style float from memory.
     *
     * Params:
@@ -275,16 +275,79 @@ public class ProcessMemory
         return true;
     }
 
+    /** 
+    * Read string in C format.
+    *
+    * Params:
+    *   address = Memory address
+    *   result = Result will be written to here
+    *
+    * Returns: Whether the read was successful or not.
+    */
+    public bool readCString(ulong address, ref string result)
+    {
+        if (address == 0)
+        {
+            Logger.error("Attempted to read from null address");
+            return false;
+        }
+
+        SIZE_T bytesRead;
+        char[256] buffer;
+
+        MEMORY_BASIC_INFORMATION mbi;
+        if (VirtualQueryEx(
+                processHandle,
+                cast(LPCVOID) address,
+                &mbi,
+                MEMORY_BASIC_INFORMATION.sizeof
+            ) == 0)
+        {
+            Logger.error("VirtualQueryEx failed for address: " ~ to!string(address));
+            return false;
+        }
+
+        if (!(mbi.State & MEM_COMMIT))
+        {
+            Logger.error("Memory at address is not committed: " ~ to!string(address));
+            return false;
+        }
+
+        if (!ReadProcessMemory(
+                processHandle,
+                cast(LPCVOID) address,
+                buffer.ptr,
+                buffer.length,
+                &bytesRead
+            ))
+        {
+            DWORD error = GetLastError();
+            Logger.error("ReadProcessMemory call failed with error code: " ~ to!string(error));
+            return false;
+        }
+
+        foreach (i; 0 .. bytesRead)
+        {
+            if (buffer[i] == 0)
+            {
+                result = cast(string) buffer[0 .. i].dup;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     /**
-     * Write memory to the specified address.
-     *
-     * Params:
-     *   address = The memory address to write to.
-     *   value = The value to write.
-     *
-     * Returns:
-     *   True if the write was successful, false otherwise.
-     */
+    * Write memory to the specified address.
+    *
+    * Params:
+    *   address = The memory address to write to.
+    *   value = The value to write.
+    *
+    * Returns:
+    *   True if the write was successful, false otherwise.
+    */
     public bool writeMemory(T)(ulong address, T value)
     {
         if (processHandle is null)
@@ -377,14 +440,14 @@ public class ProcessMemory
     }
 
     /**
-     * Get the process ID and handle by window title.
-     *
-     * Params:
-     *   windowTitle = The title of the window to find.
-     *
-     * Returns:
-     *   A ProcessMemory instance if the process is found, null otherwise.
-     */
+    * Get the process ID and handle by window title.
+    *
+    * Params:
+    *   windowTitle = The title of the window to find.
+    *
+    * Returns:
+    *   A ProcessMemory instance if the process is found, null otherwise.
+    */
     public static ProcessMemory fromWindowTitle(string windowTitle)
     {
         HWND hwnd = FindWindowA(null, toStringz(windowTitle));
@@ -451,69 +514,6 @@ public class ProcessMemory
 
         Logger.error("Could not find process: " ~ processName, true);
         return null;
-    }
-
-    /** 
-     * Read string in C format.
-     *
-     * Params:
-     *   address = Memory address
-     *   result = Result will be written to here
-     *
-     * Returns: Whether the read was successful or not.
-     */
-    public bool readCString(ulong address, ref string result)
-    {
-        if (address == 0)
-        {
-            Logger.error("Attempted to read from null address");
-            return false;
-        }
-
-        SIZE_T bytesRead;
-        char[256] buffer;
-
-        MEMORY_BASIC_INFORMATION mbi;
-        if (VirtualQueryEx(
-                processHandle,
-                cast(LPCVOID) address,
-                &mbi,
-                MEMORY_BASIC_INFORMATION.sizeof
-            ) == 0)
-        {
-            Logger.error("VirtualQueryEx failed for address: " ~ to!string(address));
-            return false;
-        }
-
-        if (!(mbi.State & MEM_COMMIT))
-        {
-            Logger.error("Memory at address is not committed: " ~ to!string(address));
-            return false;
-        }
-
-        if (!ReadProcessMemory(
-                processHandle,
-                cast(LPCVOID) address,
-                buffer.ptr,
-                buffer.length,
-                &bytesRead
-            ))
-        {
-            DWORD error = GetLastError();
-            Logger.error("ReadProcessMemory call failed with error code: " ~ to!string(error));
-            return false;
-        }
-
-        foreach (i; 0 .. bytesRead)
-        {
-            if (buffer[i] == 0)
-            {
-                result = cast(string) buffer[0 .. i].dup;
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public ulong resolveAddress(string moduleName, ulong offset)
